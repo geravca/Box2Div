@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+	<!--
+ 	* Created:	Feb 4, 2013
+ 	* Author:	gerardo_contreras
+ 	* Project:	Box2Div-gera
+	-->
+
+	<!--[if lt IE 7 ]><![endif]-->
+	<!--[if IE 7 ]><![endif]-->
+	<!--[if IE 8 ]><![endif]-->
+	<!--[if IE 9 ]><![endif]-->
+	<head>
+		<meta charset="utf-8">
+		<title>BOX2DIV-gera</title>
+		<script type="text/javascript" src="js/Box2Div/jquery-1.9.0.min.js"></script>
+		<script type="text/javascript" src="js/Box2Div/jquery.ui.touch.js"></script>
+		<script type="text/javascript" src="js/Box2Div/Box2D.js"></script>	
+		<script type="text/javascript" src="js/Box2Div/Box2Div.js"></script>	
+		<script type="text/javascript" src="js/index.js"></script>
+		<link rel="stylesheet" href="css/layout.css"/>
+		<link rel="stylesheet" href="css/content.css"/>
+	</head>
+	<body>
+		<div id="content">
+			<section class="info">
+				<h1>BOX2Div</h1>
+				<p>Esta es una extension o interfaz para la utilizacion de Box2D.</p>
+				<p>Box2D es una libreria para simulacion de fisica para juegos, originalmente creado para su uso en C++, pero se puede encontrar para otros lenguajes, en este caso
+					javascript para navegadores que soporten html5. </p>
+				<p>Box2Div, es como se mensiono una interfaz para el uso web mas facil de la libreria, en este caso se añadio la opcion de trabajar con el touch de los dispositivos
+					mobiles que originalmente no posee.</p>
+				<h4>Iniciando Box2Div:</h4>
+				<p>Lo primero que se necesita son las librerias jQuery, jquery.ui.touch, Box2D y Box2Dvis debidamente incorporadas al html.</p>
+				<div class="code">
+					<code>
+						&lt;script type="text/javascript" src="js/jquery.js"&gt;&lt;/script&gt;<br/>
+						&lt;script type="text/javascript" src="js/jquery.ui.touch.js"&gt;&lt;/script&gt;<br/>
+						&lt;script type="text/javascript" src="js/Box2D.js"&gt;&lt;/script&gt;<br/>
+						&lt;script type="text/javascript" src="js/Box2Div.js"&gt;&lt;/script&gt;<br/>
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<!-- ________________________________________________________________________ -->
+				<p>Ahora necesitamos crear una instancia de Box2Div:</p>
+				<div class="code">
+					<code>
+						var box2dInstance = new Box2Div ();
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Aunque la interfaz tiene valores por defecto, estos valores pueden ser sobreescritos.<br/><br/>
+					<b>set_density:</b> densidad del objeto en relacion a su tamaño, simulando su masa.<br/>
+					<b>set_friction:</b> repulsion entre objetos al colisionar.<br/>
+					<b>set_restitution:</b> valor de reposicion del objeto despues de colisionar con otro.<br/>
+					<b>set_gravity_X:</b> gravedad en el eje "X".<br/>
+					<b>set_gravity_Y:</b> gravedad en el eje "Y".<br/>
+					<b>set_mouse:</b> por defecto, los objetos no son seleccionables, para hacerlo asi, es necesario invocar esta funcion.<br/></p>
+				<div class="code">
+					<code>
+						box2dInstance.set_density (50);<br/>
+	   					box2dInstance.set_friction (20);<br/>
+	    				box2dInstance.set_restitution (0.8);<br/>
+	    				box2dInstance.set_gravity_X (0);<br/>
+						box2dInstance.set_gravity_Y (0);<br/>
+						box2dInstance.set_mouse ();
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Es necesario aplicar almenos una (preferiblemente la base) de las cuatro aristas en las cuales los objetos tienen como limite, imaginemos una caja, 
+					cada uno de los lados seran los limites que los objetos no atravesaran.<br/>
+					En el ejemplo se setean todos los limites menos el de arriba, el cual se setea con comillas dobles.<br/> <br/> 
+					<b>Recuerde:</b> Los parametros deben ser selectores jQuery, y deben ser siempre ID unicos, no clases.<br/>
+					El orden de los parametros son TOP, RIGHT, BOTTOM, LEFT.</p>
+				<div class="code">
+					<code>
+						box2dInstance.set_ground ("","#right","#bottom","#left");
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Es necesario pasar por parametro todos los objetos a los que se les quiere aplicar la experiencia, recuerde que debe ser un string tipo selector.</p>
+				<div class="code">
+					<code>
+						box2dInstance.set_content("#links, div#searchform .divider, h4");
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Se pueden setear objetos con atributos unicos dentro de su html tag, los atributos son
+					"density", "friction", "restitution", "static" (true/false, significa que el objeto puede quedar estatico
+					dentro de la experiencia o no).</p>
+				<div class="code">
+					<code>
+						&lt;div id="element" density="100" friction="2" restitution="2" static="true"&gt;<br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;CONTENT<br/>
+						&lt;/div&gt;
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Existe un callback que se puede setear si es necesario: "onStart":</p>
+				<div class="code">
+					<code>
+						box2dInstance.on_start (function(){<br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;alert("hello world!");<br/>
+						});<br/>
+
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+				<p>Es importante tener todo seteado antes de iniciar, sobre todo se se usan animaciones javascript de cualquier tipo, 
+					de lo contrario, los "setInterval" pueden lerdear la experiencia sobre todo en los navegadores basados en "webkit".<br/><br/>
+					Para inicial la experiencia:</p>
+				<div class="code">
+					<code>
+						box2dInstance.start ();
+					</code>
+				</div>
+				<!-- ________________________________________________________________________ -->
+			</section>
+			<section id="section01">
+				<div class="copy">
+					<h2>EJEMPLO #1:</h2>
+					<p>A continuacion un codigo fuente que usted puede modificar y correr, para ver la experiencia ejecutandose:</p>
+				</div>
+				<div id="mainCode" class="sample">
+					<textarea>
+						
+					</textarea>
+				</div>
+				<div style="width: 235px;">
+					<div id="btn_exec" class="buton">EXECUTE</div>
+					<div id="btn_reset" class="buton">RESET</div>
+				</div>
+				<div id="compiled" class="sample">
+					<div id="ONE" class="shape" style="left: 10px; top: 10px;"><p>ONE</p></div>
+					<div id="TWO" class="shape" style="left: 90px; top: 10px;"><p>TWO</p></div>
+					<div id="THREE" class="shape" style="left: 170px; top: 10px;"><p>THREE</p></div>
+					<div id="FOUR" class="shape" style="left: 250px; top: 10px;"><p>FOUR</p></div>
+					<div id="FIVE" class="shape" style="left: 330px; top: 10px;"><p>FIVE</p></div>
+					<div id="SIX" class="shape" style="left: 410px; top: 10px;"><p>SIX</p></div>
+					<div id="SEVEN" class="shape" style="left: 490px; top: 10px;"><p>SEVEN</p></div>
+					<div id="EIGHT" class="shape" style="left: 570px; top: 10px;"><p>EIGHT</p></div>
+					<div id="NINE" class="shape" style="left: 10px; top: 90px;"><p>NINE</p></div>
+					<div id="TEN" class="shape" style="left: 90px; top: 90px;"><p>TEN</p></div>
+					
+					<div id="ground_top"> </div>
+					<div id="ground_left"> </div>
+					<div id="ground_bottom"> </div>
+					<div id="ground_right"> </div>
+				</div>
+			</section>
+			
+			<section id="section02" class="info">
+				<div class="copy">
+					<h2>EJEMPLO #2:</h2>
+					<p>A continuacion un codigo fuente que usted puede modificar y correr, para ver la experiencia ejecutandose:</p>
+				</div>
+				<div id="mainCode2" class="sample">
+					<textarea>
+						
+					</textarea>
+				</div>
+				<div style="width: 235px;">
+					<div id="btn_exec2" class="buton">EXECUTE</div>
+					<div id="btn_reset2" class="buton">RESET</div>
+				</div>
+				<div id="compiled2" class="sample">
+					<div id="ONE2" class="shape" style="left: 10px; top: 10px;"><p>ONE2</p></div>
+					<div id="TWO2" class="shape" style="left: 90px; top: 10px;"><p>TWO2</p></div>
+					<div id="THREE2" class="shape" style="left: 170px; top: 10px;"><p>THREE2</p></div>
+					<div id="FOUR2" class="shape" style="left: 250px; top: 10px;"><p>FOUR2</p></div>
+					<div id="FIVE2" class="shape" style="left: 330px; top: 10px;"><p>FIVE2</p></div>
+					<div id="SIX2" class="shape" style="left: 410px; top: 10px;"><p>SIX2</p></div>
+					<div id="SEVEN2" class="shape" style="left: 490px; top: 10px;"><p>SEVEN2</p></div>
+					<div id="EIGHT2" class="shape" style="left: 570px; top: 10px;"><p>EIGHT2</p></div>
+					<div id="NINE2" class="shape" style="left: 10px; top: 90px;"><p>NINE2</p></div>
+					<div id="TEN2" class="shape" style="left: 90px; top: 90px;"><p>TEN2</p></div>
+					
+					<div id="ground_top2"> </div>
+					<div id="ground_left2"> </div>
+					<div id="ground_bottom2"> </div>
+					<div id="ground_right2"> </div>
+				</div>
+			</section>
+			
+		</div>
+ 	</body>
+</html>

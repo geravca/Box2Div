@@ -1,0 +1,110 @@
+#content {
+	margin: 0 auto;
+	width: 800px;
+	height: auto;
+}
+#ground_bottom, #ground_bottom2{
+	background-color: red;
+    height: 5px;
+    position: absolute;
+    top: 395px;
+    width: 100%;
+}
+#ground_left, #ground_left2{
+	background-color: red;
+    height: 100%;
+    left: 0px;
+    position: absolute;
+    top: 0px;
+    width: 5px;
+}
+#ground_right, #ground_right2{
+	background-color: red;
+    height: 100%;
+    left: 695px;
+    position: absolute;
+    top: 0px;
+    width: 5px;
+}
+#ground_top, #ground_top2{
+	background-color: red;
+    height: 5px;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}
+#ELEVEN{
+    background: url("../img/triangle.png") no-repeat transparent;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 1px solid red;
+}
+.buton, .visited{
+	background-color: gray;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    margin: 10px auto;
+    padding: 7px;
+    position: relative;
+    text-align: center;
+    width: 100px;
+}
+.buton:hover{
+	background-color: #999999;
+}
+.visited{
+	cursor: default;
+	background-color: #cccccc;
+}
+.copy {
+	padding: 10px;
+	text-align: left;
+}
+.sample {
+	width: 700px;
+	height: 400px;
+	border: 5px solid #666666;
+	background-color: white;
+	margin-top: 10px;
+	position: relative;
+}
+.code{
+	background-color: white;
+	border: 2px solid #666666;
+	display: block;
+    padding: 10px;
+    width: 600px;
+}
+.shape{
+	background-color: gray;
+    border-radius: 38px 38px 38px 38px;
+    color: white;
+    display: block;
+    height: 70px;
+    position: absolute;
+    width: 70px;
+}
+.square{
+    background-color: gray;
+    color: white;
+    display: block;
+    height: 70px;
+    position: absolute;
+    width: 70px;
+}
+
+.shape p{
+	padding: 17px 0 0;
+    text-align: center;
+}
+.block{
+	width: 100px;
+	height: 100px;
+	background-color: #008040;
+	position: absolute;
+}
+section.info{
+	background-color:#b3b3b3;
+}
