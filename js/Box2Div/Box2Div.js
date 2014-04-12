@@ -33,6 +33,7 @@ function Box2Div(options) {
         pauseFN = null,
         clickedFN = null,
         contactFN = null,
+        contactEndFN = null,
         objA = null,
         objB = null,
         currentMouse = null,
@@ -103,15 +104,17 @@ function Box2Div(options) {
         var b2Listener = Box2D.Dynamics.b2ContactListener;
         var listener = new b2Listener;
 
-        listener.BeginContact = function (contact) {
-            objA = contact.GetFixtureA().GetUserData();
-            objB = contact.GetFixtureB().GetUserData();
+        listener.BeginContact = function (event) {
+            objA = event.GetFixtureA().GetUserData();
+            objB = event.GetFixtureB().GetUserData();
 
             if (contactFN) contactFN(objA, objB);
         }
 
-        listener.EndContact = function (contact) {
-            //TODO:
+        listener.EndContact = function (event) {
+            objA = event.GetFixtureA().GetUserData();
+            objB = event.GetFixtureB().GetUserData();
+            if (contactEndFN) contactEndFN(objA, objB);
         }
 
         console.log(listener);
@@ -450,6 +453,9 @@ function Box2Div(options) {
         },
         onContact: function (callback) {
             contactFN = callback;
+        },
+        onContactEnd:function(callback){
+            contactEndFN = callback;
         },
         impulseObject: function (bodyID, from, to) {
             $(bodyID).data().content.ApplyImpulse(new b2Vec2(to.x, to.y), new b2Vec2(from.x, from.y));
