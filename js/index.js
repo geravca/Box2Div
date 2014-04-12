@@ -18,9 +18,7 @@ $(document).ready(function () {
         shapes:shapes,
         setMouse:false
     });
-/*
-    box2dInstance.set_ground ("#ground_top","#ground_right","#ground_bottom","#ground_left");
-    //box2dInstance.set_container("#compiled");*/
+
     box2dInstance.set_content(shapes);
 
     box2dInstance.on_start (function(){
@@ -29,8 +27,6 @@ $(document).ready(function () {
     });
 
     box2dInstance.on_contact (function (A, B){
-        //console.log(A);
-        //console.log(B);
         if (!A.isGround && A.id != "#BLOCK") $(A.id).css("background-color", ("#"+(Math.random()*0xFFFFFF<<0).toString(16)));
         if (B.id == "#BLOCK") {
             box2dInstance.destroy_element (A.id);

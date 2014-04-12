@@ -21,20 +21,11 @@ function Box2Div(options) {
     var b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef;
     var b2RevoluteJoint = Box2D.Dynamics.Joints.b2RevoluteJoint;
 
-    //var density = 1.5;
-    var friction = 0.3;
-    var restitution = 0.3;
-    var gravityX = 0;
-    var gravityY = 0;
-    var onStart = null;
-    var isMouse = false;
-    var container = 'body';
-
     var render_loop = null;
 
     var world = null;
-    var bodyList = new Array();
-    var jointsList = new Array();
+    var bodyList = [];
+    var jointsList = [];
     var FPS = 60; 	// hack (not change [usual fps])
     var itemToDelete = null;
     var playFN = null;
@@ -57,30 +48,13 @@ function Box2Div(options) {
         onStart: null,
         isMouse: false,
         container: 'body',
-        ground:{
-            top:null,
-            right:null,
-            bottom:null,
-            left:null
+        ground: {
+            top: null,
+            right: null,
+            bottom: null,
+            left: null
         },
-        shapes:[],
-
-        render_loop: null,
-
-        world: null,
-        bodyList: [],
-        jointsList: [],
-        FPS: 60, 	// hack (not change [usual fps])
-        itemToDelete: null,
-        playFN: null,
-        pauseFN: null,
-        clickedFN: null,
-        contactFN: null,
-        objA: null,
-        objB: null,
-        currentMouse: null,
-        isPaused: false,
-        isDebug: false
+        shapes: null
     };
 
     if (typeof options == 'object') {
@@ -89,10 +63,6 @@ function Box2Div(options) {
         settings = defaults;
     }
 
-//set mouse = to enable selection, default = false (avoid onjects selection)
-    Box2Div.prototype.set_mouse = function () {
-        isMouse = true;
-    }
 //set mouse = to enable selection, default = false (avoid onjects selection)
     Box2Div.prototype.get_clicked = function (fn) {
         clickedFN = fn;
@@ -161,10 +131,10 @@ function Box2Div(options) {
     }
 //link two bodies according its original position
     Box2Div.prototype.distanceLink = function (bodyID1, bodyID2, settings) {
-        var bodyA = $(bodyID1).data().content;
-        var bodyB = $(bodyID2).data().content;
+        var bodyA = $(bodyID1).data().content,
+            bodyB = $(bodyID2).data().content,
+            jointDef = new b2RevoluteJointDef();
 
-        var jointDef = new b2RevoluteJointDef();
         jointDef.bodyA = bodyA;
         jointDef.bodyB = bodyB;
 
@@ -212,13 +182,12 @@ function Box2Div(options) {
     Box2Div.prototype.start = function (debug) {
         if (debug) isDebug = true;
 
-        if (onStart)
-            onStart();
+        if (onStart) onStart();
         //---------
         if (isDebug) {
-            var debugDraw = new b2DebugDraw();
+            var debugDraw = new b2DebugDraw(),
+                canvas = $('<canvas></canvas>');
 
-            canvas = $('<canvas></canvas>');
             canvas.css('position', 'absolute');
             canvas.css('top', 0);
             canvas.css('left', 0);
@@ -380,9 +349,9 @@ function Box2Div(options) {
             isLive: true,
             shape: null,
             isGround: false
-        }
+        };
 
-        if (!isMouse) {
+        if (!settings.isMouse) {
             obj.css({
                 "-webkit-user-select": "none",
                 "-moz-user-select": "none",
@@ -408,7 +377,6 @@ function Box2Div(options) {
             fixDef.restitution = parseFloat(settings.restitution);
 
         // Shape data-shape
-
         if ($(obj).attr("data-shape")) {
             switch ($(obj).attr("data-shape")) {
                 // _____ CIRCLE CREATION
@@ -475,12 +443,12 @@ function Box2Div(options) {
         window.mouse = null;
         currentMouse = null;
 
-        $(window).mousemove(function (e) {
-            e.preventDefault();
-            mouse.Set(e.pageX / FPS, e.pageY / FPS);
+        $(window).mousemove(function (event) {
+            event.preventDefault();
+            mouse.Set(event.pageX / FPS, event.pageY / FPS);
         });
 
-        $(obj).mousedown(function (e) {
+        $(obj).mousedown(function (event) {
             if (!isPaused) if (clickedFN) clickedFN($(this));
 
             if (currentMouse != null) {
@@ -504,8 +472,8 @@ function Box2Div(options) {
             currentMouse.SetTarget(mouse);
 
 
-            function mouseup(e) {
-                e.preventDefault();
+            function mouseup(event) {
+                event.preventDefault();
                 if (currentMouse != null) world.DestroyJoint(currentMouse);
                 currentMouse = null;
             }
@@ -517,7 +485,6 @@ function Box2Div(options) {
 //--------------------------------------------------------------------------------------------------------------------
 // this runs the visual effect in the screen
     function play() {
-        console.log(jointsList[0]);
         render_loop = self.setInterval(function () {
             world.Step(
                     1 / FPS, //frame-rate
@@ -529,10 +496,9 @@ function Box2Div(options) {
 
             processObjects();
 
-            var i = bodyList.length
-            while (i--) {
-                var entity = bodyList[i];
-                var entity = $(entity);
+            var length = bodyList.length;
+            while (length--) {
+                var entity = $(bodyList[length]);
 
                 var body = entity.data().content;
                 var pos = body.GetPosition();
@@ -541,14 +507,13 @@ function Box2Div(options) {
 
                 entity.css('transform', 'translate3d(' + (pos.x * FPS - origPos.left - origPos.width / 2) + 'px, ' + (pos.y * FPS - origPos.top - origPos.height / 2) + 'px, 0) rotate3d(0,0,1,' + ~~ang + 'deg)');
             }
-
-            for (var i = 0; i < jointsList.length; i++) {
+            var i = 0;
+            for (i; i < jointsList.length; i++) {
                 var join = jointsList[i];
                 if (join.userData.motorSpeed > 0) {
                     join.SetMotorSpeed(FPS / join.userData.motorSpeed);
                 }
             }
-            ;
 
         }, 1000 / FPS);
     }
