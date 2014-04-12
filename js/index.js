@@ -1,8 +1,10 @@
 $(document).ready(function () {
+    "use strict";
     $("#compiled").append('<div id="BLOCK" data-density="100" data-friction="2" data-restitution="2" data-static="true" class="block" style="left: 170px; top: 140px;"> </div>');
 
     var shapes = "#ONE, #TWO, #THREE, #FOUR, #FIVE, #SIX, #SEVEN, #EIGHT, #NINE, #TEN, #BLOCK, #ELEVEN";
     var box2dInstance = new Box2Div ({
+        debug:true,
         density:20,
         friction:2,
         restitution:0.2,
@@ -19,33 +21,27 @@ $(document).ready(function () {
         setMouse:false
     });
 
-    box2dInstance.set_content(shapes);
-
-    box2dInstance.on_start (function(){
-        jQuery("#ONE").css("background-color", "red");
-        box2dInstance.impulseObject ("#TWO", {x:0, y:jQuery("#TWO").offset ().left}, {x:91, y:0});
-    });
-
-    box2dInstance.on_contact (function (A, B){
+    box2dInstance.impulseObject ("#TWO", {x:0, y:jQuery("#TWO").offset ().left}, {x:91, y:0});
+    box2dInstance.onContact (function (A, B){
         if (!A.isGround && A.id != "#BLOCK") $(A.id).css("background-color", ("#"+(Math.random()*0xFFFFFF<<0).toString(16)));
         if (B.id == "#BLOCK") {
-            box2dInstance.destroy_element (A.id);
+            box2dInstance.destroyElement (A.id);
             $(A.id).hide(500);
         }
         if (A.id == "#BLOCK") {
         }
     });
 
-    box2dInstance.on_pause (function (){
+    box2dInstance.onPause (function (){
         console.log("pause");
     });
 
-    box2dInstance.get_clicked (function (itemClicked){
+    box2dInstance.onClickElement (function (itemClicked){
         console.log(itemClicked);
     });
 
     var newId = 0;
-    box2dInstance.on_play (function (){
+    box2dInstance.onPlay (function (){
         newId ++;
         $("#compiled").append ('<div id="div' +newId+ '" class="square" style="left: 330px; top: 90px;"><p>:)</p></div>');
         box2dInstance.addElement ("#div"+newId);
@@ -61,11 +57,11 @@ $(document).ready(function () {
         enableMotor:true
     });
 
-    box2dInstance.start (true);
 
-
-
-
+    setTimeout(function(){
+        "use strict";
+        box2dInstance.play ();
+    },1000);
 
 
 
@@ -101,36 +97,36 @@ $(document).ready(function () {
         defaultCode += 'box2dInstance.set_container("#compiled");\n';
         defaultCode += 'box2dInstance.set_content(shapes);\n\n';
 
-        defaultCode += 'box2dInstance.on_start (function(){\n';
+        defaultCode += 'box2dInstance.onStart (function(){\n';
         defaultCode += '    jQuery("#ONE").css("background-color", "red");\n';
         defaultCode += '    box2dInstance.impulseObject ("#TWO", {x:0, y:jQuery("#TWO").offset ().left}, {x:91, y:0});\n';
         defaultCode += '});\n\n';
 
-        defaultCode += 'box2dInstance.on_contact (function (A, B){\n';
+        defaultCode += 'box2dInstance.onContact (function (A, B){\n';
         defaultCode += '    //console.log(A);\n';
         defaultCode += '    //console.log(B);\n';
         defaultCode += '    if (!A.isGround && A.id != "#BLOCK") $(A.id).css("background-color", ("#"+(Math.random()*0xFFFFFF<<0).toString(16)));\n';
         defaultCode += '    if (B.id == "#BLOCK") {\n';
-        defaultCode += '        box2dInstance.destroy_element (A.id);\n';
+        defaultCode += '        box2dInstance.destroyElement (A.id);\n';
         defaultCode += '        $(A.id).hide(500);\n';
         defaultCode += '     }\n';
         defaultCode += '    if (A.id == "#BLOCK") {\n';
-        //defaultCode += '        box2dInstance.destroy_element (B.id);\n';
+        //defaultCode += '        box2dInstance.destroyElement (B.id);\n';
         //defaultCode += '        $(B.id).hide(500);\n';
         defaultCode += '     }\n';
         defaultCode += '});\n\n';
         //<div id="NEW" class="square" style="left: 330px; top: 90px;"><p>:)</p></div>
 
-        defaultCode += 'box2dInstance.on_pause (function (){\n';
+        defaultCode += 'box2dInstance.onPause (function (){\n';
         defaultCode += '    console.log("pause");\n';
         defaultCode += '});\n\n';
 
-        defaultCode += 'box2dInstance.get_clicked (function (itemClicked){\n';
+        defaultCode += 'box2dInstance.onClickElement (function (itemClicked){\n';
         defaultCode += '    console.log(itemClicked);\n';
         defaultCode += '});\n\n';
 
         defaultCode += 'var newId = 0;\n';
-        defaultCode += 'box2dInstance.on_play (function (){\n';
+        defaultCode += 'box2dInstance.onPlay (function (){\n';
         defaultCode += '    newId ++;\n';
         defaultCode += '    $("#compiled").append (\'<div id="div\' +newId+ \'" class="square" style="left: 330px; top: 90px;"><p>:)</p></div>\');\n';
         defaultCode += '    box2dInstance.addElement ("#div"+newId);\n';
@@ -146,7 +142,7 @@ $(document).ready(function () {
         defaultCode += '    enableMotor:true\n';
         defaultCode += '});\n\n';
 
-        defaultCode += 'box2dInstance.start (true);\n\n';
+        defaultCode += 'box2dInstance.init (true);\n\n';
 
         *//*defaultCode += 'var isPaused = false;\n';
 		defaultCode += 'setInterval (function(){\n';

@@ -5,186 +5,63 @@
 //<script type="text/javascript" src="Box2D/$.ui.touch.js"></script>
 
 function Box2Div(options) {
+    "use strict";
     // IMPORT EVERTHING
-    var b2Vec2 = Box2D.Common.Math.b2Vec2;
-    var b2BodyDef = Box2D.Dynamics.b2BodyDef;
-    var b2Body = Box2D.Dynamics.b2Body;
-    var b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
-    var b2Fixture = Box2D.Dynamics.b2Fixture;
-    var b2World = Box2D.Dynamics.b2World;
-    var b2MassData = Box2D.Collision.Shapes.b2MassData;
-    var b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
-    var b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
-    var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
-    var b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef;
-    var b2MouseJoint = Box2D.Dynamics.Joints.b2MouseJoint;
-    var b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef;
-    var b2RevoluteJoint = Box2D.Dynamics.Joints.b2RevoluteJoint;
+    var b2Vec2 = Box2D.Common.Math.b2Vec2,
+        b2BodyDef = Box2D.Dynamics.b2BodyDef,
+        b2Body = Box2D.Dynamics.b2Body,
+        b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
+        b2Fixture = Box2D.Dynamics.b2Fixture,
+        b2World = Box2D.Dynamics.b2World,
+        b2MassData = Box2D.Collision.Shapes.b2MassData,
+        b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
+        b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
+        b2DebugDraw = Box2D.Dynamics.b2DebugDraw,
+        b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef,
+        b2MouseJoint = Box2D.Dynamics.Joints.b2MouseJoint,
+        b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef,
+        b2RevoluteJoint = Box2D.Dynamics.Joints.b2RevoluteJoint,
 
-    var render_loop = null;
+        render_loop = null,
 
-    var world = null;
-    var bodyList = [];
-    var jointsList = [];
-    var FPS = 60; 	// hack (not change [usual fps])
-    var itemToDelete = null;
-    var playFN = null;
-    var pauseFN = null;
-    var clickedFN = null;
-    var contactFN = null;
-    var objA = null;
-    var objB = null;
-    var currentMouse = null;
-    var isPaused = false;
-    var isDebug = false;
+        world = null,
+        bodyList = [],
+        jointsList = [],
+        FPS = 60, 	// hack (not change [usual fps])
+        itemToDelete = null,
+        playFN = null,
+        pauseFN = null,
+        clickedFN = null,
+        contactFN = null,
+        objA = null,
+        objB = null,
+        currentMouse = null,
+        isPaused = false,
 
-    var settings = {};
-    var defaults = {
-        density: 1.5,
-        friction: 0.3,
-        restitution: 0.3,
-        gravityX: 0,
-        gravityY: 0,
-        onStart: null,
-        isMouse: false,
-        container: 'body',
-        ground: {
-            top: null,
-            right: null,
-            bottom: null,
-            left: null
-        },
-        shapes: null
-    };
+        settings = {},
+        defaults = {
+            debug: false,
+            density: 1.5,
+            friction: 0.3,
+            restitution: 0.3,
+            gravityX: 0,
+            gravityY: 0,
+            isMouse: false,
+            container: 'body',
+            ground: {
+                top: null,
+                right: null,
+                bottom: null,
+                left: null
+            },
+            shapes: null
+        };
 
     if (typeof options == 'object') {
         settings = $.extend(defaults, options);
-    } else {
-        settings = defaults;
-    }
-
-//set mouse = to enable selection, default = false (avoid onjects selection)
-    Box2Div.prototype.get_clicked = function (fn) {
-        clickedFN = fn;
-    }
-//@callback = function who MUST have two parameters to return collition objects
-    Box2Div.prototype.on_contact = function (callback) {
-        contactFN = callback;
-    }
-//@id = jQuery selector of the object to destroy
-    Box2Div.prototype.destroy_element = function (id) {
-        itemToDelete = id;
-    }
-//@param content = string with the list of the $selectors ej: "#top-content, .class, h1, h2"
-    Box2Div.prototype.set_content = function (content) {
-        // world creation if it does not exists @see createWorld function
-        createWorld();
-        // parsing objects list
-        $(content).each(function (i, el) {
-            bodyList.push(el);
-        });
-        // create bodies and fixtures
-        for (var i = 0; i < bodyList.length; i++) {
-            createDivElement($(bodyList[i]), {
-                density: settings.density,
-                friction: settings.friction,
-                restitution: settings.restitution
-            });
-        }
-    }
-//@func = function to fire on start event
-    Box2Div.prototype.on_start = function (func) {
-        onStart = func;
-    }
-//@func = function to fire on play event
-    Box2Div.prototype.on_play = function (func) {
-        playFN = func;
-    }
-//@func = function to fire on pause event
-    Box2Div.prototype.on_pause = function (func) {
-        pauseFN = func;
-    }
-//Stop the experience
-    Box2Div.prototype.pause = function () {
-        isPaused = true;
-        clearInterval(render_loop);
-        if (pauseFN) pauseFN();
-    }
-//Play experience after pause it
-    Box2Div.prototype.play = function () {
-        if (currentMouse != null) world.DestroyJoint(currentMouse);
-
-        if (playFN) playFN();
-        if (isPaused) isPaused = false;
-        play();
-    }
-//addElement to the current experience
-    Box2Div.prototype.addElement = function (id) {
-        if (id) {
-            bodyList.push(id);
-            createDivElement($(id), {
-                density: settings.density,
-                friction: settings.friction,
-                restitution: settings.restitution
-            });
-        }
-    }
-//link two bodies according its original position
-    Box2Div.prototype.distanceLink = function (bodyID1, bodyID2, settings) {
-        var bodyA = $(bodyID1).data().content,
-            bodyB = $(bodyID2).data().content,
-            jointDef = new b2RevoluteJointDef();
-
-        jointDef.bodyA = bodyA;
-        jointDef.bodyB = bodyB;
-
-        jointDef.Initialize(bodyA, bodyB, bodyA.GetPosition());//jointDef.collideConnected = true;
-
-        if (settings) {
-            jointDef.enableLimit = true;
-            jointDef.referenceAngle = 0;
-
-            if (settings.lowerAngle) {
-                var low = settings.lowerAngle / 180;
-                jointDef.lowerAngle = low * Math.PI;
-            }
-            if (settings.upperAngle) {
-                var up = settings.upperAngle / 180;
-                jointDef.upperAngle = up * Math.PI;
-            }
-            if (settings.maxMotorTorque) {
-                jointDef.maxMotorTorque = settings.maxMotorTorque * FPS;
-            }
-            if (settings.motorSpeed) {
-                var speed = settings.motorSpeed / FPS;
-                jointDef.motorSpeed = settings.motorSpeed;
-            }
-            if (settings.enableMotor) {
-                jointDef.enableMotor = true;
-            }
-        }
-
-        jointDef.collideConnected = true;
-        newJoint = world.CreateJoint(jointDef);
-        if (settings) {
-            newJoint.userData = settings;
-            jointsList.push(newJoint);
-        }
-    }
-//@bodyID= jquery selector of the object, @from = initial position, @to position where want to throw
-    Box2Div.prototype.impulseObject = function (bodyID, from, to) {
-
-        $(bodyID).data().content.ApplyImpulse(new b2Vec2(to.x, to.y), new b2Vec2(from.x, from.y));
-        //$("#ONE").data().content.ApplyImpulse (new b2Vec2(700, 40), $("#ONE").data().content.GetPosition());
-    }
-
-// start experience
-    Box2Div.prototype.start = function (debug) {
-        if (debug) isDebug = true;
-
-        if (onStart) onStart();
+        world = new b2World(new b2Vec2(settings.gravityX, settings.gravityY), true);
         //---------
-        if (isDebug) {
+        if (settings.debug) {
             var debugDraw = new b2DebugDraw(),
                 canvas = $('<canvas></canvas>');
 
@@ -204,14 +81,6 @@ function Box2Div(options) {
             world.SetDebugDraw(debugDraw);
             $('html').append(canvas);
         }
-
-        createWorld();
-        // after world creation we set the container
-        ground(settings.ground.top);
-        ground(settings.ground.right);
-        ground(settings.ground.bottom);
-        ground(settings.ground.left);
-
         //--------------------------------------------------------------------------------------------------------------------
         //---------- adding touch event
         // rember import $.ui.touch.js
@@ -229,10 +98,8 @@ function Box2Div(options) {
                     el.addEventListener("touchcancel", iPadTouchHandler, false);
                 });
             }
-        };
+        }
 
-        //--------------------------------------------------------------------------------------------------------------------
-        //------ CONTACT (HIT TEST) OBJECTS-----------------------------------------------------------------------------------
         var b2Listener = Box2D.Dynamics.b2ContactListener;
         var listener = new b2Listener;
 
@@ -247,18 +114,31 @@ function Box2Div(options) {
             //TODO:
         }
 
+        console.log(listener);
         world.SetContactListener(listener);
-
         initMouse();
-        play();
+
+        $(settings.shapes).each(function (i, el) {
+            bodyList.push(el);
+        });
+        // create bodies and fixtures
+        for (var i = 0; i < bodyList.length; i++) {
+            createDivElement($(bodyList[i]), {
+                density: settings.density,
+                friction: settings.friction,
+                restitution: settings.restitution
+            });
+        }
+
+        ground(settings.ground.top);
+        ground(settings.ground.right);
+        ground(settings.ground.bottom);
+        ground(settings.ground.left);
+
+    } else {
+        settings = defaults;
     }
 
-// world creation, called several times to secure the environment first of all, but it will be handled once only
-    function createWorld() {
-        if (!world) world = new b2World(new b2Vec2(settings.gravityX, settings.gravityY), true);
-    }
-
-//@limit = string selector for ground limit creation
     function ground(limit) {
         //console.log ("density: " + density + " / friction: " + friction + " / restitution: " + restitution);
         if (limit !== "" && limit !== null && limit !== undefined) {
@@ -305,8 +185,6 @@ function Box2Div(options) {
         }
     }
 
-//@obj = $selector of the object, @settings = settings
-// create body element
     function createDivElement(obj, settings) {
         var fixDef = createFixture(obj, settings);
         // Body
@@ -333,8 +211,6 @@ function Box2Div(options) {
         initMouse(obj);
     }
 
-//@obj = $selector of the object, @settings = settings
-//create a fixture and return it
     function createFixture(obj, settings) {
         obj.data('origPos', {
             left: obj.offset().left,
@@ -387,7 +263,6 @@ function Box2Div(options) {
                 // _____ TRIANGLE CREATION
                 // triangles always go to use the bottom of the div as its bottom base too
                 case "triangle":
-                    console.log(world);
                     var left = parseFloat($(obj).attr("data-left-size")) / FPS;
                     var right = parseFloat($(obj).attr("data-right-size")) / FPS;
                     var top = parseFloat($(obj).attr("data-top-size")) / FPS;
@@ -436,8 +311,6 @@ function Box2Div(options) {
         return s === 'true';
     }
 
-//--------------------------------------------------------------------------------------------------------------------
-// Mouse interaction added to every object
     function initMouse(obj) {
         var mouse = new b2Vec2;
         window.mouse = null;
@@ -482,8 +355,6 @@ function Box2Div(options) {
         });
     }
 
-//--------------------------------------------------------------------------------------------------------------------
-// this runs the visual effect in the screen
     function play() {
         render_loop = self.setInterval(function () {
             world.Step(
@@ -492,7 +363,7 @@ function Box2Div(options) {
                 10 //position iterations
             );
             world.ClearForces();
-            if (isDebug) world.DrawDebugData();
+            if (settings.debug) world.DrawDebugData();
 
             processObjects();
 
@@ -518,22 +389,18 @@ function Box2Div(options) {
         }, 1000 / FPS);
     }
 
-//--------------------------------------------------------------------------------------------------------------------
-// deleting object listener, this delete objects from jquery list and box2d bodies
     function processObjects() {
         if (itemToDelete) {
+            var newArray = [];
+            var i = 0,
+                items = bodyList.length;
 
-            var newArray = new Array();
-            var count = 0;
-            var items = bodyList.length;
-
-            for (var i = 0; i < bodyList.length; i++) {
+            for (i; i < items; i++) {
                 var item = bodyList[i];
                 if (item != itemToDelete) {
                     newArray.push(item);
                 }
             }
-            ;
 
             bodyList = newArray;
 
@@ -554,7 +421,92 @@ function Box2Div(options) {
 
         if (bodyList.length <= 1) {
             clearInterval(render_loop);
-            //console.log ("GAME OVER");
+        }
+    }
+
+    /*******************************************************************************************************************
+     * PUBLIC METHODS
+     *******************************************************************************************************************/
+    return {
+        play: function () {
+            if (currentMouse != null) world.DestroyJoint(currentMouse);
+            if (playFN) playFN();
+            if (isPaused) isPaused = false;
+            play();
+        },
+        onPlay: function (func) {
+            playFN = func;
+        },
+        pause: function () {
+            isPaused = true;
+            clearInterval(render_loop);
+            if (pauseFN) pauseFN();
+        },
+        onPause: function (func) {
+            pauseFN = func;
+        },
+        onClickElement: function (fn) {
+            clickedFN = fn;
+        },
+        onContact: function (callback) {
+            contactFN = callback;
+        },
+        impulseObject: function (bodyID, from, to) {
+            $(bodyID).data().content.ApplyImpulse(new b2Vec2(to.x, to.y), new b2Vec2(from.x, from.y));
+        },
+        addElement: function (id) {
+            if (id) {
+                bodyList.push(id);
+                createDivElement($(id), {
+                    density: settings.density,
+                    friction: settings.friction,
+                    restitution: settings.restitution
+                });
+            }
+        },
+        destroyElement: function (id) {
+            itemToDelete = id;
+        },
+        distanceLink: function (bodyID1, bodyID2, settings) {
+            var bodyA = $(bodyID1).data().content,
+                bodyB = $(bodyID2).data().content,
+                jointDef = new b2RevoluteJointDef();
+
+            jointDef.bodyA = bodyA;
+            jointDef.bodyB = bodyB;
+
+            jointDef.Initialize(bodyA, bodyB, bodyA.GetPosition());//jointDef.collideConnected = true;
+
+            if (settings) {
+                jointDef.enableLimit = true;
+                jointDef.referenceAngle = 0;
+
+                if (settings.lowerAngle) {
+                    var low = settings.lowerAngle / 180;
+                    jointDef.lowerAngle = low * Math.PI;
+                }
+                if (settings.upperAngle) {
+                    var up = settings.upperAngle / 180;
+                    jointDef.upperAngle = up * Math.PI;
+                }
+                if (settings.maxMotorTorque) {
+                    jointDef.maxMotorTorque = settings.maxMotorTorque * FPS;
+                }
+                if (settings.motorSpeed) {
+                    var speed = settings.motorSpeed / FPS;
+                    jointDef.motorSpeed = settings.motorSpeed;
+                }
+                if (settings.enableMotor) {
+                    jointDef.enableMotor = true;
+                }
+            }
+
+            jointDef.collideConnected = true;
+            var newJoint = world.CreateJoint(jointDef);
+            if (settings) {
+                newJoint.userData = settings;
+                jointsList.push(newJoint);
+            }
         }
     }
 }
